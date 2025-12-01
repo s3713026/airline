@@ -1,4 +1,5 @@
 import { AirlineController } from '@/controllers/airlineController';
+import 'module-alias/register';
 import adminRoutes from '@/routes/adminRoutes';
 import airlineRoutes from '@/routes/airlineRoutes';
 import bookingRoutes from '@/routes/bookingRoutes';
