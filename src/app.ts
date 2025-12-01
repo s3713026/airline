@@ -1,0 +1,78 @@
+import { AirlineController } from '@/controllers/airlineController';
+import adminRoutes from '@/routes/adminRoutes';
+import airlineRoutes from '@/routes/airlineRoutes';
+import bookingRoutes from '@/routes/bookingRoutes';
+import companyRoutes from '@/routes/companyRoutes';
+import configRoutes from '@/routes/configRoutes';
+import contactRoutes from '@/routes/contactRoutes';
+import flightRoutes from '@/routes/flightRoutes';
+import cors from 'cors';
+import express from 'express';
+import session from 'express-session';
+import helmet from 'helmet';
+
+declare module 'express-session' {
+    interface SessionData {
+        user?: {
+            username: string;
+            isAuthenticated: boolean;
+        };
+    }
+}
+
+const app = express();
+const PORT = process.env.PORT ?? 3000;
+
+// Khởi tạo thư mục uploads
+AirlineController.initializeUploadDirectories()
+    .then(() => console.log('Khởi tạo thư mục uploads thành công'))
+    .catch((error) => console.error('Lỗi khởi tạo thư mục uploads:', error));
+
+// Middleware
+app.use(helmet());
+app.use(express.static('public'));
+app.use(
+    cors({
+        origin: 'http://localhost:5173', // Replace with your frontend URL
+        credentials: true
+    })
+);
+app.use(express.json());
+
+// Session configuration
+app.use(
+    session({
+        secret: 'ovftank', // Change this to a secure secret
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
+            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        }
+    })
+);
+
+// Routes
+app.use('/api/admin', adminRoutes);
+app.use('/api/flights', flightRoutes);
+app.use('/api/config', configRoutes);
+app.use('/api/company', companyRoutes);
+app.use('/api/airlines', airlineRoutes);
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/contact', contactRoutes);
+// Error handling
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error(err.stack);
+    res.status(500).json({
+        success: false,
+        error: 'Lỗi không xác định',
+        // message: err.message
+        message: "Đã xảy ra lỗi. Vui lòng thử lại sau.",
+    });
+    next(err);
+});
+
+app.listen(PORT, () => {
+    console.log(`Máy chủ đang chạy trên cổng ${PORT}`);
+});
