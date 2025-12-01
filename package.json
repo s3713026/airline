@@ -23,7 +23,8 @@
     "nodemailer": "^6.9.16",
     "@types/pg": "^8.6.6",
     "@types/nodemailer": "^6.4.7",
-    "sqlite3": "^5.1.6"
+    "sqlite3": "^5.1.6",
+    "module-alias": "^2.2.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
@@ -37,5 +38,8 @@
     "prettier": "^3.4.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
+  },
+  "_moduleAliases": {
+    "@": "dist"
   }
 }
