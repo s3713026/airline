@@ -32,13 +32,26 @@ AirlineController.initializeUploadDirectories()
 // Middleware
 app.use(helmet());
 app.use(express.static('public'));
-app.use(
-    cors({
-        origin: 'http://localhost:5173', // Replace with your frontend URL
-        credentials: true
-    })
-);
 app.use(express.json());
+
+// CORS setup cho dev + production
+const allowedOrigins = [
+    'http://localhost:5173',              // dev
+    'https://vietjetair-cee.web.app'     // production frontend
+];
+
+app.use(cors({
+    origin: function(origin, callback) {
+        // allow requests with no origin (like curl, mobile apps)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
+    credentials: true
+}));
 
 // Session configuration
 app.use(
@@ -62,17 +75,19 @@ app.use('/api/company', companyRoutes);
 app.use('/api/airlines', airlineRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/contact', contactRoutes);
+
 // Error handling
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error(err.stack);
-    res.status(500).json({
-        success: false,
-        error: 'Lỗi không xác định',
-        // message: err.message
-        message: "Đã xảy ra lỗi. Vui lòng thử lại sau.",
-    });
-    next(err);
-});
+app.use(
+    (err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+        console.error(err.stack);
+        res.status(500).json({
+            success: false,
+            error: 'Lỗi không xác định',
+            message: 'Đã xảy ra lỗi. Vui lòng thử lại sau.'
+        });
+        next(err);
+    }
+);
 
 app.listen(PORT, () => {
     console.log(`Máy chủ đang chạy trên cổng ${PORT}`);
